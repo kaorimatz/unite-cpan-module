@@ -2,10 +2,26 @@ let s:save_cpo = &cpo
 set cpo&vim
 
 let s:V = vital#of('unite-cpanapi')
+let s:List = s:V.import('Data.List')
 let s:Http = s:V.import('Web.Http')
 let s:Json = s:V.import('Web.Json')
 
 let s:cpanapi_search_module_uri = 'http://api.metacpan.org/v0/file/_search'
+
+function! s:create_modules(fields)
+  let l:modules = []
+  for l:m in a:fields.module
+    let l:ret = {}
+    let l:ret.name = l:m.name
+    let l:ret.version = get(l:m, 'version', a:fields.version)
+    let l:ret.author = a:fields.author
+    let l:ret.abstract = get(a:fields, 'abstract', '')
+    let l:ret.path = a:fields.path
+    let l:ret.release = a:fields.release
+    call add(l:modules, l:ret)
+  endfor
+  return l:modules
+endfunction
 
 function! s:search_modules(input)
   let l:filters = [
@@ -15,9 +31,7 @@ function! s:search_modules(input)
         \ s:make_query(a:input),
         \ ]
   let l:fields = [
-        \ 'id',
-        \ 'documentation',
-        \ 'distribution',
+        \ 'module',
         \ 'version',
         \ 'author',
         \ 'abstract',
@@ -36,7 +50,7 @@ function! s:search_modules(input)
   endif
 
   let l:decoded = s:Json.decode(l:response.content)
-  return map(l:decoded.hits.hits, 'v:val.fields')
+  return s:List.concat(map(l:decoded.hits.hits, 's:create_modules(v:val.fields)'))
 endfunction
 
 function! s:max_candidates()
@@ -44,12 +58,10 @@ function! s:max_candidates()
 endfunction
 
 function! s:create_candidate(module, args, context)
-  let l:module_name = a:module.documentation
-  let l:abstract = get(a:module, 'abstract', '')
-  let l:abbr = l:module_name . (!empty(l:abstract) ? ' - ' . l:abstract : '')
+  let l:abstract = empty(a:module.abstract) ? '' : ' - ' . a:module.abstract
   return {
-        \ 'abbr': l:abbr,
-        \ 'word': l:module_name,
+        \ 'abbr':  a:module.name . l:abstract,
+        \ 'word': a:module.name,
         \ 'kind': 'uri',
         \ 'action__path': s:cpan_uri(a:module)
         \ }
