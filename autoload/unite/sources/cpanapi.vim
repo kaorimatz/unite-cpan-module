@@ -5,16 +5,31 @@ let s:V = vital#of('unite-cpanapi')
 let s:Http = s:V.import('Web.Http')
 let s:Json = s:V.import('Web.Json')
 
-let s:cpanapi_release_search_uri = 'http://api.metacpan.org/v0/release/_search'
+let s:cpanapi_search_module_uri = 'http://api.metacpan.org/v0/file/_search'
 
 function! s:search_modules(input)
+  let l:filters = [
+        \ 'status:latest',
+        \ 'maturity:released',
+        \ '_exists_:module.name',
+        \ s:make_query(a:input),
+        \ ]
+  let l:fields = [
+        \ 'id',
+        \ 'documentation',
+        \ 'distribution',
+        \ 'version',
+        \ 'author',
+        \ 'abstract',
+        \ 'path',
+        \ ]
   let l:params = {
-        \ 'q': join(['status:latest', s:make_query(a:input)], ' AND '),
-        \ 'fields': join(['id', 'distribution', 'version', 'author', 'abstract'], ','),
+        \ 'q': join(l:filters, ' AND '),
+        \ 'fields': join(l:fields, ','),
         \ 'size': s:max_candidates(),
         \ }
 
-  let l:response = s:Http.get(s:cpanapi_release_search_uri, l:params)
+  let l:response = s:Http.get(s:cpanapi_search_module_uri, l:params)
   if !l:response.success
     return []
   endif
@@ -28,13 +43,12 @@ function! s:max_candidates()
 endfunction
 
 function! s:create_candidate(module, args, context)
-  let l:dist = substitute(a:module.distribution, '-', '::', 'g')
+  let l:module_name = a:module.documentation
   let l:abstract = get(a:module, 'abstract', '')
-  let l:abbr = l:dist . (!empty(l:abstract) ? ' - ' . l:abstract : '')
+  let l:abbr = l:module_name . (!empty(l:abstract) ? ' - ' . l:abstract : '')
   return {
         \ 'abbr': l:abbr,
-        \ 'word': l:dist,
-        \ 'action__module_name': l:dist,
+        \ 'word': l:module_name,
         \ }
 endfunction
 
