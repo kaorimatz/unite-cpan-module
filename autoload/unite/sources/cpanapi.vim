@@ -54,7 +54,7 @@ function! s:search_modules(input)
 endfunction
 
 function! s:max_candidates()
-  return get(g:, 'unite_source_cpanapi_max_candidates', 100)
+  return get(g:, 'unite_source_cpanapi_max_candidates', 50)
 endfunction
 
 function! s:create_candidate(module, args, context)
