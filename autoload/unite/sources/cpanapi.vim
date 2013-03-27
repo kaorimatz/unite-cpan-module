@@ -22,6 +22,7 @@ function! s:search_modules(input)
         \ 'author',
         \ 'abstract',
         \ 'path',
+        \ 'release',
         \ ]
   let l:params = {
         \ 'q': join(l:filters, ' AND '),
@@ -49,6 +50,8 @@ function! s:create_candidate(module, args, context)
   return {
         \ 'abbr': l:abbr,
         \ 'word': l:module_name,
+        \ 'kind': 'uri',
+        \ 'action__path': s:cpan_uri(a:module)
         \ }
 endfunction
 
@@ -57,15 +60,23 @@ function! s:make_query(input)
   return '(' . join(l:quoted, ' AND ') . ')'
 endfunction
 
+function! s:cpan_uri(module)
+  return printf('http://search.cpan.org/~%s/%s/%s',
+        \ tolower(a:module.author),
+        \ a:module.release,
+        \ a:module.path
+        \ )
+endfunction
+
 function! unite#sources#cpanapi#define()
   return s:source
 endfunction
 
 let s:source = {
-      \ 'name' : 'cpanapi',
-      \ 'description' : 'candidates from cpan modules',
-      \ 'default_action' : 'insert',
-      \ 'hooks' : {},
+      \ 'name': 'cpanapi',
+      \ 'description': 'candidates from cpan modules',
+      \ 'default_action': 'start',
+      \ 'hooks': {},
       \}
 
 function! s:source.hooks.on_init(args, context)
