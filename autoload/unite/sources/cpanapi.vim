@@ -13,7 +13,7 @@ function! s:create_modules(fields)
   for l:m in a:fields.module
     let l:ret = {}
     let l:ret.name = l:m.name
-    let l:ret.version = get(l:m, 'version', a:fields.version)
+    let l:ret.version = get(l:m, 'version', get(a:fields, 'version', ''))
     let l:ret.author = a:fields.author
     let l:ret.abstract = get(a:fields, 'abstract', '')
     let l:ret.path = a:fields.path
