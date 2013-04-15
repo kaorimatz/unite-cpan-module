@@ -18,6 +18,7 @@ function! s:create_modules(fields)
     let l:ret.abstract = get(a:fields, 'abstract', '')
     let l:ret.path = a:fields.path
     let l:ret.release = a:fields.release
+    let l:ret.date = a:fields.date
     call add(l:modules, l:ret)
   endfor
   return l:modules
@@ -37,6 +38,7 @@ function! s:search_modules(input)
         \ 'abstract',
         \ 'path',
         \ 'release',
+        \ 'date',
         \ ]
   let l:params = {
         \ 'q': join(l:filters, ' AND '),
@@ -59,6 +61,9 @@ endfunction
 
 function! s:create_candidate(module, args, context)
   let l:abbr = a:module.name
+  if !empty(a:module.date)
+    let l:abbr .= ' [' . matchstr(a:module.date, '^\d\{4}-\d\{2}-\d\{2}') . ']'
+  endif
   if !empty(a:module.author)
     let l:abbr .= ' (' . a:module.author . ')'
   endif
@@ -106,6 +111,7 @@ function! s:source.hooks.on_init(args, context)
 endfunction
 
 function! s:source.hooks.on_syntax(args, context)
+  syntax match uniteSource__Cpanapi_Date /\[\d\{4}-\d\{2}-\d\{2}\]/ contained containedin=uniteSource__Cpanapi
   syntax match uniteSource__Cpanapi_Author /([-A-Z]*)/ contained containedin=uniteSource__Cpanapi
 endfunction
 
