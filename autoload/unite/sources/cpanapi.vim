@@ -58,9 +58,15 @@ function! s:max_candidates()
 endfunction
 
 function! s:create_candidate(module, args, context)
-  let l:abstract = empty(a:module.abstract) ? '' : ' - ' . a:module.abstract
+  let l:abbr = a:module.name
+  if !empty(a:module.author)
+    let l:abbr .= ' (' . a:module.author . ')'
+  endif
+  if !empty(a:module.abstract)
+    let l:abbr .=  ' - ' . a:module.abstract
+  endif
   return {
-        \ 'abbr':  a:module.name . l:abstract,
+        \ 'abbr': l:abbr,
         \ 'word': a:module.name,
         \ 'kind': 'uri',
         \ 'action__path': s:cpan_uri(a:module)
@@ -88,6 +94,7 @@ let s:source = {
       \ 'name': 'cpanapi',
       \ 'description': 'candidates from cpan modules',
       \ 'default_action': 'start',
+      \ 'syntax': 'uniteSource__Cpanapi',
       \ 'hooks': {},
       \}
 
@@ -96,6 +103,10 @@ function! s:source.hooks.on_init(args, context)
   if a:context.source__input == ''
     let a:context.source__input = unite#util#input('please input search words: ')
   endif
+endfunction
+
+function! s:source.hooks.on_syntax(args, context)
+  syntax match uniteSource__Cpanapi_Author /([-A-Z]*)/ contained containedin=uniteSource__Cpanapi
 endfunction
 
 function! s:source.gather_candidates(args, context)
