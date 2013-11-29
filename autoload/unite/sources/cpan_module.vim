@@ -1,12 +1,12 @@
 let s:save_cpo = &cpo
 set cpo&vim
 
-let s:V = vital#of('unite-cpanapi')
+let s:V = vital#of('unite-cpan-module')
 let s:List = s:V.import('Data.List')
 let s:Http = s:V.import('Web.Http')
 let s:Json = s:V.import('Web.Json')
 
-let s:cpanapi_search_module_uri = 'http://api.metacpan.org/v0/file/_search'
+let s:metacpan_search_file_endpoint = 'http://api.metacpan.org/v0/file/_search'
 
 function! s:create_modules(fields)
   let l:modules = []
@@ -46,7 +46,7 @@ function! s:search_modules(input)
         \ 'size': s:max_candidates(),
         \ }
 
-  let l:response = s:Http.get(s:cpanapi_search_module_uri, l:params)
+  let l:response = s:Http.get(s:metacpan_search_file_endpoint, l:params)
   if !l:response.success
     return []
   endif
@@ -56,7 +56,7 @@ function! s:search_modules(input)
 endfunction
 
 function! s:max_candidates()
-  return get(g:, 'unite_source_cpanapi_max_candidates', 50)
+  return get(g:, 'unite_source_cpan_module_max_candidates', 50)
 endfunction
 
 function! s:create_candidate(module, args, context)
@@ -91,15 +91,15 @@ function! s:cpan_uri(module)
         \ )
 endfunction
 
-function! unite#sources#cpanapi#define()
+function! unite#sources#cpan_module#define()
   return s:source
 endfunction
 
 let s:source = {
-      \ 'name': 'cpanapi',
+      \ 'name': 'cpan-module',
       \ 'description': 'candidates from cpan modules',
       \ 'default_action': 'start',
-      \ 'syntax': 'uniteSource__Cpanapi',
+      \ 'syntax': 'uniteSource__CpanModule',
       \ 'hooks': {},
       \}
 
@@ -111,8 +111,10 @@ function! s:source.hooks.on_init(args, context)
 endfunction
 
 function! s:source.hooks.on_syntax(args, context)
-  syntax match uniteSource__Cpanapi_Date /\[\d\{4}-\d\{2}-\d\{2}\]/ contained containedin=uniteSource__Cpanapi
-  syntax match uniteSource__Cpanapi_Author /([-A-Z]*)/ contained containedin=uniteSource__Cpanapi
+  syntax match uniteSource__CpanModule_Date /\[\d\{4}-\d\{2}-\d\{2}\]/
+        \ contained containedin=uniteSource__CpanModule
+  syntax match uniteSource__CpanModule_Author /([-A-Z]*)/
+        \ contained containedin=uniteSource__CpanModule
 endfunction
 
 function! s:source.gather_candidates(args, context)
