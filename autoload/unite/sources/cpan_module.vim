@@ -51,7 +51,12 @@ function! s:search_modules(input)
     return []
   endif
 
-  let l:decoded = s:Json.decode(l:response.content)
+  let l:json = l:response.content
+
+  " Avoid crash in eval() with a invalid floating point number for Vim script
+  let l:json = substitute(l:json, '\v("version_numified"\s+:\s+-?\d+)([eE])', '\1.0\2', 'g')
+
+  let l:decoded = s:JSON.decode(l:json)
   return s:List.concat(map(l:decoded.hits.hits, 's:create_modules(v:val.fields)'))
 endfunction
 
