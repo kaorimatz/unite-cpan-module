@@ -3,8 +3,8 @@ set cpo&vim
 
 let s:V = vital#of('unite-cpan-module')
 let s:List = s:V.import('Data.List')
-let s:Http = s:V.import('Web.Http')
-let s:Json = s:V.import('Web.Json')
+let s:HTTP = s:V.import('Web.HTTP')
+let s:JSON = s:V.import('Web.JSON')
 
 let s:metacpan_search_file_endpoint = 'http://api.metacpan.org/v0/file/_search'
 
@@ -46,7 +46,7 @@ function! s:search_modules(input)
         \ 'size': s:max_candidates(),
         \ }
 
-  let l:response = s:Http.get(s:metacpan_search_file_endpoint, l:params)
+  let l:response = s:HTTP.get(s:metacpan_search_file_endpoint, l:params)
   if !l:response.success
     return []
   endif
