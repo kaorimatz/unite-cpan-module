@@ -61,7 +61,7 @@ function! s:search_modules(input)
 endfunction
 
 function! s:max_candidates()
-  return get(g:, 'unite_source_cpan_module_max_candidates', 50)
+  return get(g:, 'unite_source_cpan_module_max_candidates', 20)
 endfunction
 
 function! s:create_candidate(module, args, context)
@@ -106,6 +106,7 @@ let s:source = {
       \ 'default_action': 'start',
       \ 'syntax': 'uniteSource__CpanModule',
       \ 'hooks': {},
+      \ 'max_candidates': s:max_candidates(),
       \}
 
 function! s:source.hooks.on_init(args, context)
